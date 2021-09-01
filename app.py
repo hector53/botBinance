@@ -570,7 +570,6 @@ def listar_ordenes():
 
 @app.route('/_listar_tabla_futures', methods=["POST"])
 def listar_tabla_futures():
-    # ahora usar la api de binance y cerrar el sintetico :D
     dis = client.futures_coin_mark_price()
    # print(client.response.headers)
     EliminarTablaFuture()
