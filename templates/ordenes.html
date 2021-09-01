@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}
+Ordenes Future
+{% endblock %}
+{% block content %}
+<h1 class="py-3">Ordenes Future Coin M </h1>
+<div class="table-responsive">
+    <table id="ordenesTabla" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+  
+  <thead>
+    <tr>
+        <th scope="col">Symbol</th>
+        <th scope="col">P.E</th>
+        <th scope="col">P.C.S</th>
+        <th scope="col">P.S</th>
+        <th scope="col">P.S.S</th>
+        <th scope="col">TasaI</th>
+        <th scope="col">TasaA</th>
+        <th scope="col"> %</th>
+        <th scope="col">Cerrar%</th>
+        <th scope="col">S</th>
+        <th scope="col">CYA</th>
+        <th scope="col">CMA</th>
+        
+        <th scope="col">OID</th>
+        <th scope="col">Type</th>
+        <th scope="col">Side</th>
+        <th scope="col">Trans</th>
+        <th scope="col">Cont</th>
+        <th scope="col">Fecha</th>
+        
+        
+        
+    </tr>
+  </thead>
+  <tbody>
+    {% for dato in datos %}
+    <tr>
+        
+        <td>{{dato.2}}</td>
+        <td>{{dato.6}}</td>
+        <td>{{dato.7}}</td>
+        <td>
+            <span class="precioS_{{loop.index}}">{{dato.15}}</span>
+            </td>
+        <td>
+            <span class="precioSS_{{loop.index}}">{{dato.16}}</span>
+           </td>
+        <td>
+            {% set tasaInicial = dato.6|float / dato.7|float * 100 -100  %}
+            {% set diferencia = tasaInicial|float  - dato.10 %}
+            
+            {{ '%0.4f'| format(tasaInicial|float) }}
+        
+        </td>
+        <td>
+            <span class="tasaA_{{loop.index}}">{{dato.10}}</span>
+            </td>
+        <td>
+            {% if diferencia > 0 %}
+                <span class="difO_{{loop.index}} OrdenDiferenciaP">{{ "%.4f"|format(diferencia) }}%</span>
+
+            {% else %}
+                <span class="difO_{{loop.index}} OrdenDiferenciaN">{{ "%.4f"|format(diferencia) }}%</span>
+
+            {% endif %}
+        </td>
+        <td>
+            {% if dato.13|int == 1 %}
+                    <div style="display: flex;">
+                    <input type="number" class="form-control" value="{{dato.11}}" style="margin-right: 10px;     width: 100px;" id="cerrar_{{dato.0}}" >
+                    <button type="button" class="btn btn-primary" onclick="actualizarCierre('{{dato.0}}')">Ok</button>
+                    </div>
+                {% else %}
+                    {{dato.11}}
+
+                {% endif %}
+            
+        </td>
+        <td>{% if dato.13|int == 1 %}
+            <span class="OrdenDiferenciaP">Abierta</span>
+        {% else %}
+            <span class="OrdenDiferenciaN">Cerrada</span>
+
+        {% endif %}</td>
+        <td>
+
+            <button type="button" class="btn btn-primary" onclick="cerrarYa('{{dato.1}}')">Cerrar YA</button>
+        </td>
+
+        <td>
+
+            <button type="button" class="btn btn-primary" onclick="cerrarManual('{{dato.0}}')">Cerrar Manual</button>
+        </td>
+        
+        
+
+        <td>{{dato.1}}</td>
+        <td>{{dato.4}}</td>
+        <td>{{dato.5}}</td>
+        <td>{{dato.9}}</td>
+        <td>{{dato.8}}</td>
+        
+        <td>{{dato.14}}</td>
+
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+</div>
+<script>
+    $(document).ready(function() {
+
+        var table =  $('#ordenesTabla').DataTable({
+            "order": [[ 17, "desc" ]],
+      "paging":   false,
+        "ordering": false,
+        "info":     false,
+        "searching": false,
+    });
+
+
+setInterval( function () {
+$.ajax({
+type: "POST",
+url: $SCRIPT_ROOT + '/_listar_tabla_orden_',
+success: function(response)
+{
+//     console.log(response.iTotalRecords)
+    for (var i = 0; i < response.length; i++) {
+      var els = document.getElementsByClassName("precioS_"+(i+1));
+        $( ".precioS_"+(i+1) ) .each(function(){
+         // console.log($(this).text())
+          $(this).text( parseFloat(response[i][15]).toFixed(4))
+      })
+      ////////////
+
+      var els = document.getElementsByClassName("precioSS_"+(i+1));
+        $( ".precioSS_"+(i+1) ) .each(function(){
+         // console.log($(this).text())
+          $(this).text(parseFloat(response[i][16]).toFixed(4))
+      })
+      ////////////
+     var tasaInicial = ( parseFloat(response[i][6]) / parseFloat(response[i][7]) )* 100 -100 
+
+     
+     var els = document.getElementsByClassName("tasaA_"+(i+1));
+        $( ".tasaA_"+(i+1) ) .each(function(){
+         // console.log($(this).text())
+          $(this).text(parseFloat(response[i][10]).toFixed(4))
+      }) 
+        diferenciaActual = tasaInicial - parseFloat( response[i][10])
+      var els = document.getElementsByClassName("difO_"+(i+1));
+        $( ".difO_"+(i+1) ) .each(function(){
+         // console.log($(this).text())
+         if(diferenciaActual > 0){
+             console.log("mayor")
+             $(this).removeClass('OrdenDiferenciaN')
+             $(this).addClass('OrdenDiferenciaP');
+         }else{
+             console.log("menor")
+             $(this).removeClass('OrdenDiferenciaP')
+             $(this).addClass('OrdenDiferenciaN');
+         }
+         
+          $(this).text(diferenciaActual.toFixed(4))
+      })
+     
+    }
+}
+});
+}, 1000 );
+
+
+
+
+} );
+    function actualizarCierre(id){
+      var inputCierre = $( "#cerrar_"+id ).val()
+      if(inputCierre == ''){
+        alert("no puede estar vacio el campo de cierre")
+        return false
+      }
+      $.ajax({
+            type: "POST",
+            url: $SCRIPT_ROOT + '/_change_cerrar_en',
+            data: {"id":id, "cierre": inputCierre},
+            success: function(response)
+            {
+                if(response.result == 1){
+                alert("Actualizado")
+                }
+           }
+       });
+    }
+
+    function cerrarManual(id){
+        var confirmar = confirm("Estas seguro que deseas cerrar esta orden de forma manual?");
+        if(confirmar){
+            var confirmar2 = confirm("Si estas haciendo esto significa que ya lo hiciste desde binance, por lo tanto ya no quieres mostrarlo en esta tabla?");
+            if(confirmar2){
+                    $.ajax({
+                    type: "POST",
+                    url: $SCRIPT_ROOT + '/_cerrar_manual_',
+                    data: {"id":id},
+                    success: function(response)
+                    {
+                        $.LoadingOverlay("hide");
+                        if(response.result == 1){
+                        alert("Sintetico Cerrado")
+                        }else{
+                        alert(response.result)
+                        }
+                    }
+                    });
+            }
+        
+        }
+    }
+
+    function cerrarYa(id){
+        $.LoadingOverlay("show");
+      $.ajax({
+            type: "POST",
+            url: $SCRIPT_ROOT + '/_cerrar_ya',
+            data: {"id":id},
+            success: function(response)
+            {
+                
+            $.LoadingOverlay("hide");
+              
+            if(response.result == 1){
+              alert("Sintetico Cerrado")
+              location.reload();
+            }else{
+                alert(response.result)
+            }
+           }
+       });
+    }
+    </script>
+{% endblock %}

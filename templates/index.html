@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}
+Inicio
+{% endblock %}
+{% block content %}
+<h1 class="py-3">Crear Compra</h1>
+<table id="ordenesTabla" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%">
+
+  <thead>
+    <tr>
+      <th scope="col">Symbol</th>
+      <th scope="col">MarkPrice</th>
+      <th scope="col">IndexPrice</th>
+      <th scope="col">Days</th>
+      <th scope="col">dir_rate%</th>
+      <th scope="col">annual_rate%</th>
+
+      <th scope="col">Operación</th>
+      <th scope="col">Ultima Actualizacion</th>
+
+
+    </tr>
+  </thead>
+  <tbody>
+    {% set m=0 %}
+    {% for dato in datos %}
+
+    <tr>
+      <td>{{dato.1}}</td>
+      <td><span class="markPrice_{{loop.index}}">{{dato.2}}</span></td>
+      <td><span class="indexPrice_{{loop.index}}">{{dato.3}}</span></td>
+      <td><span class="days_{{loop.index}}">{{dato.4}}</span></td>
+      <td><span class="dirRate_{{loop.index}}">{{dato.5}}</span></td>
+      <td><span class="annualRate_{{loop.index}}">{{dato.6}}</span></td>
+
+      <td>
+        <div style="display: flex;">
+          <input style="width: 100px!important;     margin-right: 10px;" type="number" class="form-control" value=""
+            id="orden_{{dato.1}}">
+          <button type="button" class="btn btn-primary" onclick="crearOrden('{{dato.1}}')">Ok</button>
+        </div>
+      </td>
+      <td><span class="fecha_{{loop.index}}">{{dato.7}}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script>
+  function get_fecha_actual() {
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    var time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+    fechaHoy = date + ' ' + time
+    return fechaHoy
+  }
+  $(document).ready(function () {
+    var table = $('#ordenesTabla').DataTable({
+      "paging": false,
+      "ordering": false,
+      "info": false,
+      "searching": false,
+      "order": [
+        [4, "desc"]
+      ]
+    });
+    setInterval(function () {
+      $.ajax({
+        type: "POST",
+        url: $SCRIPT_ROOT + '/_listar_tabla_futures',
+        success: function (response) {
+          //     console.log(response.iTotalRecords)
+          for (var i = 0; i < response.length; i++) {
+            var els = document.getElementsByClassName("markPrice_" + (i + 1));
+            $(".markPrice_" + (i + 1)).each(function () {
+              // console.log($(this).text())
+              $(this).text(response[i][2])
+            })
+            ////////////
+            var els = document.getElementsByClassName("indexPrice_" + (i + 1));
+            $(".indexPrice_" + (i + 1)).each(function () {
+              // console.log($(this).text())
+              $(this).text(response[i][3])
+            })
+            ////////
+            var els = document.getElementsByClassName("dirRate_" + (i + 1));
+            $(".dirRate_" + (i + 1)).each(function () {
+              // console.log($(this).text())
+              $(this).text(response[i][5])
+            })
+            /////
+            var els = document.getElementsByClassName("annualRate_" + (i + 1));
+            $(".annualRate_" + (i + 1)).each(function () {
+              // console.log($(this).text())
+              $(this).text(response[i][6])
+            })
+            ///
+            var els = document.getElementsByClassName("fecha_" + (i + 1));
+            $(".fecha_" + (i + 1)).each(function () {
+              // console.log($(this).text())
+              $(this).text(get_fecha_actual())
+            })
+          }
+        }
+      });
+    }, 1000);
+  });
+  function crearOrden(id) {
+    var inputOrden = $("#orden_" + id).val()
+    if (inputOrden == '') {
+      alert("no puede estar vacio el campo de cantidad")
+      return false
+    }
+    $.LoadingOverlay("show");
+    $.ajax({
+      type: "POST",
+      url: $SCRIPT_ROOT + '/_create_orden',
+      data: {
+        "id": id,
+        "monto": inputOrden
+      },
+      success: function (response) {
+        console.log(response)
+        $.LoadingOverlay("hide");
+
+        if (response.result == 1) {
+          alert("Sintetico Enviado")
+          location.href = 'ordenes'
+        } else {
+          alert(response.result)
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}
