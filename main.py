@@ -370,23 +370,23 @@ def manual():
                       #buscar balance en spot 
                       
                       if(moneda == 'DOT'):
-                        montoTransferir = math.floor(float(montoTransferir) * 1000)/1000.0
+                        montoTransferir = math.floor(float(montoTransferir) * 100)/100.0
                       if(moneda == 'LINK'):
-                        montoTransferir = math.floor(float(montoTransferir) * 1000)/1000.0
+                        montoTransferir = math.floor(float(montoTransferir) * 100)/100.0
                       if(moneda == 'ADA'):
-                        montoTransferir = math.floor(float(montoTransferir) * 100)/100.0
+                        montoTransferir = math.floor(float(montoTransferir) * 10)/10.0
                       if(moneda == 'ETH'):
-                        montoTransferir = math.floor(float(montoTransferir) * 100000)/100000.0
-                      if(moneda == 'BNB'):
                         montoTransferir = math.floor(float(montoTransferir) * 10000)/10000.0
+                      if(moneda == 'BNB'):
+                        montoTransferir = math.floor(float(montoTransferir) * 1000)/1000.0
                       if(moneda == 'XRP'):
-                        montoTransferir = math.floor(float(montoTransferir) * 100)/100.0
+                        montoTransferir = math.floor(float(montoTransferir) * 1)/1.0
                       if(moneda == 'BCH'):
-                        montoTransferir = math.floor(float(montoTransferir) * 100000)/100000.0
+                        montoTransferir = math.floor(float(montoTransferir) * 1000)/1000.0
                       if(moneda == 'LTC'):
-                        montoTransferir = math.floor(float(montoTransferir) * 100000)/100000.0
+                        montoTransferir = math.floor(float(montoTransferir) * 1000)/1000.0
                       if(moneda == 'BTC'):
-                        montoTransferir = math.floor(float(montoTransferir) * 1000000)/1000000.0
+                        montoTransferir = math.floor(float(montoTransferir) * 100000)/100000.0
                      
                       print("monto a vender :", montoTransferir)
                       Or = ordenVentaBinance(moneda+'USDT', 'SELL', montoTransferir)
